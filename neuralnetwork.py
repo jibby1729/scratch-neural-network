@@ -24,6 +24,7 @@ class SoftMax:
         return normalized_exp / (np.sum(normalized_exp, axis = 1, keepdims=True))
     
     def backward(self, dL_dout):
+        # not needed tbh but to make backward work for both activation classes this is more convenient, useless function that doesn't do anything 
         return dL_dout
         
 
@@ -64,11 +65,11 @@ class Layer:
         #backpropagation throguh the layer
         dL_dout = self.activation.backward(dL_dout)
 
-        # Gradients for weights and biases
+        # Gradients for weights and biases, this is just the backpropagation calculus, note that for db we sum the rows (updating for the whole batch at once)
         dW = np.dot(self.inputs.T, dL_dout)
         db = np.sum(dL_dout, axis=0, keepdims=True)
 
-        # Update weights and biases
+        # Update weights and biases, this is gradient descent 
         self.weights -= learning_rate * dW
         self.biases -= learning_rate * db
         
@@ -78,14 +79,28 @@ class Layer:
     
 class nn:
     def __init__(self, layers):
+    # layers will be a List[Layer] object (an array of Layer objects), our loss is the cross-entropy loss (though if you want you can put in sth else but then you'd have to define its class with its own calc and backward methods)
         self.layers = layers
         self.loss = CrossEntropy()
     
     def forward(self, inputs):
+    # push the input forward through the layers
         outputs = inputs
         for layer in self.layers:
             outputs = layer.forward(outputs)
         return outputs
+    
+    def backward(self, predicted, actual, learning_rate=0.01):
+        # Start with the loss gradient (which is v simple in our case, but i am building this to be more flexible in case u wanna add more loss/activation functions)
+        dL_dout = self.loss.backward(predicted, actual)
+        
+        # Backpropagate through each layer, since we start from the output layer we are going backwards
+        for layer in reversed(self.layers):
+            dL_dout = layer.backward(dL_dout, learning_rate)    
+        
+    
+
+        
 
 
 

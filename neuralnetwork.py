@@ -97,8 +97,18 @@ class nn:
         # Backpropagate through each layer, since we start from the output layer we are going backwards
         for layer in reversed(self.layers):
             dL_dout = layer.backward(dL_dout, learning_rate)    
+
+
+    def train(self, X, y, epochs=100, learning_rate=0.01):
+        # do the gradient descent 100 times by default with 0.01 learning rate, this is also batch gradient descent (not so good) but yea whatever
+        # X is the training data, it has shape (batch_size, 784) if we flatten the 28x28 image. y is the label, it is (batch_size, 10) shape
+        for epoch in range(epochs):
+            outputs = self.forward(X)
+            loss = self.loss.forward(outputs, y)
+            self.backward(outputs, y, learning_rate)
+            
         
-    
+
 
         
 
